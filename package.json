@@ -7,7 +7,9 @@
     "build": "swc src -d dist --source-maps --copy-files",
     "start": "node dist/src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prisma:init": "prisma init"
+    "prisma:init": "prisma init",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --preview-feature"
   },
   "keywords": [],
   "author": "Angel",
@@ -15,7 +17,7 @@
   "description": "",
   "devDependencies": {
     "@swc/cli": "^0.6.0",
-    "@swc/core": "^1.10.7",
+    "@swc/core": "^1.10.8",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.7",
     "tsx": "^4.19.2",

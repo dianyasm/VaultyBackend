@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -26,6 +26,53 @@ model User{
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  Offers    Offer[]
+  rates     Rate[]
+}
 
+model Offer {
+  id          Int @id @default(autoincrement())
+  title       String
+  description String?
+  active      Boolean @default(true)
+  contactEmail String?
+  location    String?
+  published   DateTime @default(now()) //iso8601
+  expired     DateTime //iso8601
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  //FK
+  idCategory   Int?
+  category     Category?  @relation (fields: [idCategory], references: [id])
+
+  idUserCreator Int
+  userCreator   User  @relation (fields: [idUserCreator], references: [id])
+
+  rates     Rate[]
+
+}
+
+model Category{
+  id          Int @id @default(autoincrement())
+  name        String  @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  offers   Offer[]
+}
+
+model Rate{
+  idUser    Int
+  idOffer   Int
+  value     Int 
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [idUser], references: [id])
+  offer Offer @relation(fields: [idOffer], references: [id])
+
+  @@id([idUser, idOffer])
 }

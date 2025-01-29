@@ -1,8 +1,11 @@
 import { Router } from "express";
 import { AuthController} from '../controllers/auth.controller'
+import { loginValidation, registerValidation } from "../middlewares/validators.middleware";
+import { ValidationMiddleware } from "../middlewares/validation.middleware";
 const router = Router()
 
-router.post('/login', AuthController.login)
-router.post('/register', AuthController.register)
+router.post('/login', loginValidation, ValidationMiddleware, AuthController.login)
+// router.post('/logout', AuthController.logout)
+router.post('/register', registerValidation, ValidationMiddleware, AuthController.register)
 
 export default router

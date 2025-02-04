@@ -21,6 +21,7 @@ router.put('/:id', OfferController.update)
 router.post('/:id/rate/',OfferController.rate)  
 // Vemos que calificación (total) se le ha data a una oferta X
 router.get('/:id/rate/', OfferController.getRate)
+router.get('/:id/rate/', OfferController.getMyRate)
 
 
 

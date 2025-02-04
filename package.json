@@ -10,7 +10,7 @@
     "prisma:init": "prisma init",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --preview-feature",
-    "prisma:deploy":"prisma migrate deploy"
+    "prisma:deploy": "prisma migrate deploy"
   },
   "keywords": [],
   "author": "Angel",
@@ -29,6 +29,8 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
+    "@libsql/client": "^0.8.1",
+    "@prisma/adapter-libsql": "^6.3.1",
     "@prisma/client": "^6.2.1",
     "@types/jsonwebtoken": "^9.0.8",
     "bcrypt": "^5.1.1",

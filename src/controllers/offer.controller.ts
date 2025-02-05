@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express"
 import { OfferService } from "../services/offer.service"
-import { HttpException } from "@/exceptions/httpException";
+import { HttpException } from "../exceptions/httpException";
 
 export class OfferController{
     static async getById(req:Request, res:Response, next:NextFunction){

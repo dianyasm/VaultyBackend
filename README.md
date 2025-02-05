@@ -31,4 +31,11 @@ npm i cors
 npm i --save-dev @types/cors
 
 npm i express-validator
+
+npm install -g npm-check-updates
+npx npm-check-updates           // comprobar
+npx npm-check-updates -u        // actualiza
+
+npm i morgan
+npm i --save-dev @types/morgan
 ```

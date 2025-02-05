@@ -5,6 +5,7 @@ import { Category } from "@prisma/client";
 //TODO problema, mejor usar el patrón singleton
 
 export class CategoryService {
+
   static async getAll() {
     return prisma.category.findMany();
   }
@@ -17,11 +18,15 @@ export class CategoryService {
   }
 
   static async create(category: Category) {
-    return await prisma.category.create({
-      data: {
-        ...category,
-      },
-    });
+    try{
+      return await prisma.category.create({
+        data: {
+          ...category,
+        },
+      });
+    }catch(error){
+        throw new HttpException(401, "Error creating category");
+      }
   }
 
   static async update(id: number, category: Category) {

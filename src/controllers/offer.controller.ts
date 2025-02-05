@@ -29,7 +29,7 @@ export class OfferController{
     static async create(req:Request, res:Response, next: NextFunction){
         try{
             const offerData = req.body
-            const userId = req.body.user.id
+            const userId = req.user?.id
 
             if (!userId) throw new HttpException(400, "User creator ID is required");
             
@@ -72,7 +72,8 @@ export class OfferController{
             if (isNaN(id)) throw new HttpException(400, "Invalid offer ID");
 
             const {value} = req.body
-            const userId = req.body.user.id
+            const userId = req.user?.id
+            if(!userId) throw new HttpException(400, "User creator ID is required")
 
             await OfferService.rate(userId, id, value)
             res.status(200).json({message: 'Offer rate successfully'})

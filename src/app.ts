@@ -10,7 +10,6 @@ import compression from 'compression'
 import cookieParser  from 'cookie-parser'
 import cors from 'cors'
 import morgan from 'morgan'
-import { libsql } from './database/database'
 
 const app = express()
 app.use(cookieParser())

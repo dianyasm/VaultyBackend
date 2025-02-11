@@ -49,6 +49,7 @@ export class OfferService {
     }
 
     static async create(idUser: number, offer: Offer){
+        console.log('Creando', idUser)
         return await prisma.offer.create({ 
             data: {
                 ...offer,
@@ -77,7 +78,7 @@ export class OfferService {
     }
 
     static async rate(idUser: number, idOffer: number, value: number): Promise<void>{
-        if(value < 0 || value > 5) throw new Error('Rating must be between 0 and 5')
+        if(value < 0 || value > 5) throw new Error('Rating must be between 0 and 5.')
 
 
         const offer = await prisma.offer.findUnique({where: {id:idOffer}})
@@ -91,9 +92,6 @@ export class OfferService {
     }
 
     static async getRate(idOffer: number){
-        //select avg(value) as mediaCalificacion, cont(value) as totalRates
-        //from rate
-        //where offerId = id
         const ratingStats = await prisma.rate.aggregate({
             where:{idOffer},
             _avg: {value:true},

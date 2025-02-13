@@ -17,7 +17,7 @@ export class AuthController{
             const userData = req.body
             const token = await AuthService.login(userData.email, userData.password)
             res.cookie('token', token,{
-                maxAge: 60*60*1000, //1 hora de caducidad
+                maxAge: 60*60*1000*3, //3 hora de caducidad
                 httpOnly:true, //no se puede acceder mediante js
                 secure:false, //solo se envia si usas https
                 sameSite:'strict', //evita ataques CSRF

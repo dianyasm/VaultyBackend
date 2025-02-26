@@ -14,66 +14,81 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model User{
+model User {
   id        Int @id @default(autoincrement())
   name      String 
   surname   String?
   email     String @unique
   password  String
-  role      String?  //admin  vip  null
-  course    String?
+  role      String?  // admin user null
+  preferences String?
   active    Boolean @default(true)
   acceptNotifications Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Offers    Offer[]
-  rates     Rate[]
+  series    UserSeries[]
+  reviews   Review[]
 }
 
-model Offer {
+model Series {
   id          Int @id @default(autoincrement())
   title       String
   description String?
   active      Boolean @default(true)
-  contactEmail String?
-  location    String?
-  published   DateTime @default(now()) //iso8601
-  expired     DateTime //iso8601
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  releaseDate DateTime?
+  endDate     DateTime?
+  seasons     Int @default(1)
+  episodes    Int @default(1)
+  network     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  //FK
-  idCategory   Int?
-  category     Category?  @relation (fields: [idCategory], references: [id])
+  // FK
+  idGenre     Int?
+  genre       Genre?  @relation(fields: [idGenre], references: [id])
 
-  idUserCreator Int
-  userCreator   User  @relation (fields: [idUserCreator], references: [id])
-
-  rates     Rate[]
-
+  userSeries  UserSeries[]
+  reviews     Review[]
 }
 
-model Category{
+model Genre {
   id          Int @id @default(autoincrement())
   name        String  @unique
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  offers   Offer[]
+  series      Series[]
 }
 
-model Rate{
-  idUser    Int
-  idOffer   Int
-  value     Int 
+model UserSeries {
+  idUser      Int
+  idSeries    Int
+  status      String  // watching, completed, plan_to_watch, dropped
+  progress    Int @default(0)  // episode number
+  favorite    Boolean @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  user        User @relation(fields: [idUser], references: [id])
+  series      Series @relation(fields: [idSeries], references: [id])
 
-  user User @relation(fields: [idUser], references: [id])
-  offer Offer @relation(fields: [idOffer], references: [id])
+  @@id([idUser, idSeries])
+}
 
-  @@id([idUser, idOffer])
+model Review {
+  idUser      Int
+  idSeries    Int
+  rating      Int  // 1-10 rating
+  comment     String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User @relation(fields: [idUser], references: [id])
+  series      Series @relation(fields: [idSeries], references: [id])
+
+  @@id([idUser, idSeries])
 }

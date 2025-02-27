@@ -3,6 +3,7 @@ import authRouter from './routes/auth.routes'
 import userRouter from './routes/user.routes'
 import seriesRouter from './routes/series.routes'
 import genreRouter from './routes/genre.routes'
+import tmdbRouter from './routes/tmdb.routes'
 
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
@@ -39,6 +40,7 @@ app.use('/api/auth', authRouter)
 app.use('/api/users', userRouter)
 app.use('/api/series', seriesRouter)
 app.use('/api/genres', genreRouter)
+app.use('/api/tmdb', tmdbRouter)
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Welcome to Series Tracker API')

@@ -6,6 +6,6 @@ const PORT = process.env.PORT || 3000
 
 app.use(ErrorMiddleware)
 
-app.listen(PORT, () => {
-    console.log(`Series Tracker API running on port: ${PORT}`)
+app.listen(PORT, ()=>{
+    console.log("servidor encendido en el puerto:"+PORT)
 })

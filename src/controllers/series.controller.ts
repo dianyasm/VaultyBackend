@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 import { SeriesService } from "../services/series.service"
 import { HttpException } from "../exceptions/httpException";
-import { prisma } from "@/database/database";
+import { prisma } from "../database/database";
 import { Prisma, Series } from "@prisma/client";
 
 export class SeriesController {

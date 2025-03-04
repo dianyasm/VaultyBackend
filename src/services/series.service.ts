@@ -1,3 +1,4 @@
+import { NextFunction } from "express";
 import { prisma } from "../database/database";
 import { HttpException } from "../exceptions/httpException";
 import { Series, Review, UserSeries } from "@prisma/client";
@@ -33,53 +34,70 @@ export class SeriesService {
       });
     }
 
-    static async create(series: Partial<Series>) {
-      try {
-        if (!series.title) {
-          throw new HttpException(400, "Title is required");
-        }
-    
-        // Excluir propiedades no necesarias
-        const { id, createdAt, updatedAt, ...validSeriesData } = series;
-    
-        return await prisma.series.create({
-          data: {
-            ...validSeriesData,
-          },
-          include: {
-            genre: true,
-          },
-        });
-      } catch (error) {
-        throw new HttpException(400, "Error creating series");
-      }
+    static async create(idUser: number, serie: Series) {
+      console.log("creando", idUser);
+      return await prisma.series.create({
+        data: {
+          ...serie,
+          idUserCreator: idUser,
+        },
+      });
     }
 
-    static async update(id: number, series: Partial<Series>) {
+    static async update(id: number, data: Partial<Series>) {
       try {
-        return await prisma.series.update({
-          where: { id },
-          data: { ...series },
-          include: {
-            genre: true
+          // First, check if the series exists
+          const existingSeries = await prisma.series.findUnique({
+              where: { id }
+          });
+
+          if (!existingSeries) {
+              throw new HttpException(404, "Series not found");
           }
-        });
-      } catch (error) {
-        throw new HttpException(404, "Series not found");
-      }
-    }
 
-    static async delete(id: number) {
-      try {
-        // Instead of deleting, set active to false
-        return await prisma.series.update({
-          where: { id },
-          data: { active: false },
-        });
+          // Perform the update
+          return await prisma.series.update({
+              where: { id },
+              data: {
+                  ...data,
+                  updatedAt: new Date() // Ensure updatedAt is refreshed
+              },
+              include: {
+                  genre: true // Optional: include genre details in the response
+              }
+          });
       } catch (error) {
-        throw new HttpException(404, "Series not found");
+          if (error instanceof HttpException) throw error;
+          console.error(error);
+          throw new HttpException(400, "Error updating series");
       }
-    }
+  }
+
+  static async delete(id: number) {
+      try {
+          // First, check if the series exists
+          const existingSeries = await prisma.series.findUnique({
+              where: { id }
+          });
+
+          if (!existingSeries) {
+              throw new HttpException(404, "Series not found");
+          }
+
+          // Soft delete: set active to false
+          return await prisma.series.update({
+              where: { id },
+              data: { 
+                  active: false,
+                  updatedAt: new Date()
+              }
+          });
+      } catch (error) {
+          if (error instanceof HttpException) throw error;
+          console.error(error);
+          throw new HttpException(400, "Error deleting series");
+      }
+   }
 
     static async addToUserList(
       userId: number,
@@ -198,4 +216,52 @@ export class SeriesService {
         throw new HttpException(400, "Error fetching reviews");
       }
     }
+
+    static async getFavorites(userId: number): Promise<Series[]> {
+      try {
+          const favorites = await prisma.userSeries.findMany({
+              where: {
+                  idUser: userId,
+                  favorite: true,
+              },
+              select: {
+                  series: {
+                      include: {
+                          genre: true
+                      }
+                  }
+              }
+          });
+
+          // Extract series from UserSeries
+          return favorites.map(item => item.series);
+      } catch (error) {
+          console.error(error);
+          throw new HttpException(500, "Error obtaining favorite series");
+      }
+  }
+
+  static async getWatchlist(userId: number): Promise<Series[]> {
+      try {
+          const watchlist = await prisma.userSeries.findMany({
+              where: {
+                  idUser: userId,
+                  status: "watchlist", 
+              },
+              select: {
+                  series: {
+                      include: {
+                          genre: true
+                      }
+                  }
+              }
+          });
+
+          // Extract series from UserSeries
+          return watchlist.map(item => item.series);
+      } catch (error) {
+          console.error(error);
+          throw new HttpException(500, "Error obtaining watchlist");
+      }
+  }
 }

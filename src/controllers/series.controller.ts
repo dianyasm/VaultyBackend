@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express"
 import { SeriesService } from "../services/series.service"
 import { HttpException } from "../exceptions/httpException";
+import { prisma } from "@/database/database";
+import { Prisma, Series } from "@prisma/client";
 
 export class SeriesController {
     static async getById(req: Request, res: Response, next: NextFunction) {
@@ -27,17 +29,23 @@ export class SeriesController {
 
     static async create(req: Request, res: Response, next: NextFunction) {
         try {
-            const seriesData = req.body
-            const userId = req.user?.id
-
+            const userId = req.user?.id;
             if (!userId) throw new HttpException(400, "User ID is required");
-            
-            const newSeries = await SeriesService.create(seriesData)
-            res.status(201).json(newSeries)
+    
+            const serieData = req.body;
+    
+            const newSeries = await prisma.series.create({
+                data: {
+                    ...serieData,
+                    idUserCreator: userId
+                }
+            });
+    
+            res.status(201).json(newSeries);
         } catch (error) {
-            next(error)
+            next(error);
         }
-    }
+    }    
 
     static async update(req: Request, res: Response, next: NextFunction) {
         try {
@@ -121,6 +129,34 @@ export class SeriesController {
             res.status(200).json(reviews)
         } catch (error) {
             next(error)
+        }
+    }
+
+    static async getFavorites(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user?.id;
+            if (!userId) {
+                throw new HttpException(400, 'User ID is required');
+            }
+    
+            const favorites = await SeriesService.getFavorites(userId);
+            res.status(200).json(favorites);
+        } catch (error) {
+            next(error);
+        }
+    }
+    
+    static async getWatchlist(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user?.id;
+            if (!userId) {
+                throw new HttpException(400, 'User ID is required');
+            }
+    
+            const watchlist = await SeriesService.getWatchlist(userId);
+            res.status(200).json(watchlist);
+        } catch (error) {
+            next(error);
         }
     }
 }

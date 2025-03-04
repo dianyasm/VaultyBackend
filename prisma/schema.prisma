@@ -44,6 +44,8 @@ model Series {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  idUserCreator Int
+  
   // FK
   idGenre     Int?
   genre       Genre?  @relation(fields: [idGenre], references: [id])

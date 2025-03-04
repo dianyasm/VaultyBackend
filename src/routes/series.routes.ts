@@ -30,4 +30,8 @@ router.post('/:id/review', isAuthenticate, reviewValidation, ValidationMiddlewar
 // Get all reviews for a series
 router.get('/:id/reviews', SeriesController.getReviews)
 
+// User's favorites and watchlist
+router.get('/user/favorites', isAuthenticate, SeriesController.getFavorites);
+router.get('/user/watchlist', isAuthenticate, SeriesController.getWatchlist);
+
 export default router

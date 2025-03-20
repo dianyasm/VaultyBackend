@@ -1,267 +1,126 @@
-import { NextFunction } from "express";
 import { prisma } from "../database/database";
 import { HttpException } from "../exceptions/httpException";
-import { Series, Review, UserSeries } from "@prisma/client";
+import { Series, PrismaClient, User } from "@prisma/client";
+//const prisma = new PrismaClient()
 
 export class SeriesService {
-    static async getById(id: number) {
-      const series = await prisma.series.findUnique({
-        where: { id },
-        include: {
-          genre: true
-        }
-      });
-      if (!series) throw new HttpException(404, "Series not found");
-      return series;
-    }
+  static async getById(id: number) {
+    const findSerie = await prisma.series.findUnique({ where: { id } });
+    if (!findSerie) throw new HttpException(404, "Serie not found");
+    return findSerie;
+  }
 
-    static async getAll(title: string = "") {
-      return await prisma.series.findMany({
-        where: {
-          ...(title && {
-            title: {
-              contains: title,
+  // localhost:3000/api/offer/?title=dam
+  static async getAll(title: string = "") {
+    /*  return await prisma.offer.findMany({
+            where: title ? {
+                title: {
+                    contains: title
+                }
+            } : {},
+            orderBy: {
+                createdAt: 'desc'
             },
-          }),
-          active: true
-        },
-        orderBy: {
-          updatedAt: "desc",
-        },
-        include: {
-          genre: true,
-        },
-      });
-    }
+            take: 100
+        }) */
 
-    static async create(idUser: number, serie: Series) {
-      console.log("creando", idUser);
-      return await prisma.series.create({
-        data: {
-          ...serie,
-          idUserCreator: idUser,
+    return await prisma.series.findMany({
+      where: {
+        ...(title && {
+          title: {
+            contains: title,
+            //mode: "insensitive" // Búsqueda sin distinción entre mayúsculas y minúsculas
+          },
+        }),
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 100,
+      include: {
+        genre: {
+          select: {
+            name: true,
+          },
         },
-      });
-    }
+      },
+    });
+  }
 
-    static async update(id: number, data: Partial<Series>) {
-      try {
-          // First, check if the series exists
-          const existingSeries = await prisma.series.findUnique({
-              where: { id }
-          });
+  static async create(idUser: number, series: Series) {
+    console.log("creando", idUser);
+    return await prisma.series.create({
+      data: {
+        ...series,
+        idUserCreator: idUser,
+      },
+    });
+  }
 
-          if (!existingSeries) {
-              throw new HttpException(404, "Series not found");
-          }
-
-          // Perform the update
-          return await prisma.series.update({
-              where: { id },
-              data: {
-                  ...data,
-                  updatedAt: new Date() // Ensure updatedAt is refreshed
-              },
-              include: {
-                  genre: true // Optional: include genre details in the response
-              }
-          });
-      } catch (error) {
-          if (error instanceof HttpException) throw error;
-          console.error(error);
-          throw new HttpException(400, "Error updating series");
-      }
+  static async update(id: number, series: Series) {
+    const findSeries = await prisma.series.findUnique({ where: { id } });
+    if (!findSeries) throw new HttpException(404, "Serie doesnt exists");
+    return await prisma.series.update({
+      where: { id },
+      data: {
+        ...series,
+      },
+    });
   }
 
   static async delete(id: number) {
-      try {
-          // First, check if the series exists
-          const existingSeries = await prisma.series.findUnique({
-              where: { id }
-          });
-
-          if (!existingSeries) {
-              throw new HttpException(404, "Series not found");
-          }
-
-          // Soft delete: set active to false
-          return await prisma.series.update({
-              where: { id },
-              data: { 
-                  active: false,
-                  updatedAt: new Date()
-              }
-          });
-      } catch (error) {
-          if (error instanceof HttpException) throw error;
-          console.error(error);
-          throw new HttpException(400, "Error deleting series");
-      }
-   }
-
-    static async addToUserList(
-      userId: number,
-      seriesId: number,
-      data: { status: string; progress: number; favorite: boolean }
-    ) {
-      // Check if series exists
-      const series = await prisma.series.findUnique({ where: { id: seriesId } });
-      if (!series) throw new HttpException(404, "Series not found");
-
-      try {
-        return await prisma.userSeries.upsert({
-          where: {
-            idUser_idSeries: {
-              idUser: userId,
-              idSeries: seriesId
-            }
-          },
-          update: { ...data },
-          create: {
-            idUser: userId,
-            idSeries: seriesId,
-            ...data
-          }
-        });
-      } catch (error) {
-        throw new HttpException(400, "Error adding series to user list");
-      }
+    try {
+      return await prisma.series.delete({ where: { id } });
+    } catch (error) {
+      throw new HttpException(404, "Serie not found");
     }
-
-    static async updateUserProgress(
-      userId: number,
-      seriesId: number,
-      data: { status?: string; progress?: number; favorite?: boolean }
-    ) {
-      try {
-        // Find existing user series relation
-        const userSeries = await prisma.userSeries.findUnique({
-          where: {
-            idUser_idSeries: {
-              idUser: userId,
-              idSeries: seriesId
-            }
-          }
-        });
-
-        if (!userSeries) {
-          throw new HttpException(404, "Series not in user's list");
-        }
-
-        return await prisma.userSeries.update({
-          where: {
-            idUser_idSeries: {
-              idUser: userId,
-              idSeries: seriesId
-            }
-          },
-          data: { ...data }
-        });
-      } catch (error) {
-        if (error instanceof HttpException) throw error;
-        throw new HttpException(400, "Error updating user progress");
-      }
-    }
-
-    static async review(
-      userId: number,
-      seriesId: number,
-      reviewData: { rating: number; comment?: string }
-    ) {
-      // Check if series exists
-      const series = await prisma.series.findUnique({ where: { id: seriesId } });
-      if (!series) throw new HttpException(404, "Series not found");
-
-      try {
-        return await prisma.review.upsert({
-          where: {
-            idUser_idSeries: {
-              idUser: userId,
-              idSeries: seriesId
-            }
-          },
-          update: { ...reviewData },
-          create: {
-            idUser: userId,
-            idSeries: seriesId,
-            ...reviewData
-          }
-        });
-      } catch (error) {
-        throw new HttpException(400, "Error submitting review");
-      }
-    }
-
-    static async getReviews(seriesId: number) {
-      try {
-        const reviews = await prisma.review.findMany({
-          where: { idSeries: seriesId },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                surname: true,
-                email: true
-              }
-            }
-          },
-          orderBy: {
-            updatedAt: 'desc'
-          }
-        });
-
-        return reviews;
-      } catch (error) {
-        throw new HttpException(400, "Error fetching reviews");
-      }
-    }
-
-    static async getFavorites(userId: number): Promise<Series[]> {
-      try {
-          const favorites = await prisma.userSeries.findMany({
-              where: {
-                  idUser: userId,
-                  favorite: true,
-              },
-              select: {
-                  series: {
-                      include: {
-                          genre: true
-                      }
-                  }
-              }
-          });
-
-          // Extract series from UserSeries
-          return favorites.map(item => item.series);
-      } catch (error) {
-          console.error(error);
-          throw new HttpException(500, "Error obtaining favorite series");
-      }
   }
 
-  static async getWatchlist(userId: number): Promise<Series[]> {
-      try {
-          const watchlist = await prisma.userSeries.findMany({
-              where: {
-                  idUser: userId,
-                  status: "watchlist", 
-              },
-              select: {
-                  series: {
-                      include: {
-                          genre: true
-                      }
-                  }
-              }
-          });
+  static async rate(
+    idUser: number,
+    idSerie: number,
+    value: number
+  ): Promise<void> {
+    // Validar que el rating está dentro del rango permitido
+    if (value < 0 || value > 5) {
+      throw new Error("Rating must be between 0 and 5.");
+    }
 
-          // Extract series from UserSeries
-          return watchlist.map(item => item.series);
-      } catch (error) {
-          console.error(error);
-          throw new HttpException(500, "Error obtaining watchlist");
-      }
+    // Verificar si la oferta existe
+    const serie = await prisma.series.findUnique({ where: { id: idSerie } });
+    if (!serie) {
+      throw new Error("Serie not found.");
+    }
+
+    // Actualizar o crear la calificación
+
+    /*
+        SELECT  AVG(value) AS averageValue, COUNT(value) AS totalCount
+    FROM Rating
+    WHERE offerId = <offerId>;
+        */
+    await prisma.rate.upsert({
+      where: { idUser_idSerie: { idUser, idSerie } },
+      update: { value },
+      create: { idUser, idSerie, value },
+    });
+  }
+
+  static async getRate(idSerie: number) {
+    const ratingStats = await prisma.rate.aggregate({
+      where: { idSerie },
+      _avg: { value: true }, // Calcular el promedio
+      _count: { value: true }, // Contar el total de calificaciones
+    });
+    return {
+      totalRatings: ratingStats._count.value || 0,
+      averageRating: ratingStats._avg.value?.toFixed(2) || 0,
+    };
+  }
+
+  static async getMyRate(idUser: number, idSerie: number) {
+    return await prisma.rate.findUnique({
+      where: { idUser_idSerie: { idUser, idSerie } },
+    });
   }
 }

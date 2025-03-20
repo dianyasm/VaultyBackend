@@ -3,7 +3,8 @@ import authRouter from './routes/auth.routes'
 import userRouter from './routes/user.routes'
 import seriesRouter from './routes/series.routes'
 import genreRouter from './routes/genre.routes'
-import tmdbRouter from './routes/tmdb.routes'
+import quejasRouter from './routes/quejas.routes'
+
 
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
@@ -17,7 +18,7 @@ app.use(cookieParser())
 
 // Configure CORS for your frontend domains
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://series-tracker-frontend.onrender.com'],
+    origin: ['http://localhost:5173', 'https://vaultyfrontend.onrender.com'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -36,14 +37,15 @@ const limiter = rateLimit({
 app.use(limiter)
 
 // Update API routes to match your TV series application domain
-app.use('/api/auth', authRouter)
-app.use('/api/users', userRouter)
+app.use('/api/auth',authRouter)
+app.use('/api/users',userRouter)
 app.use('/api/series', seriesRouter)
-app.use('/api/genres', genreRouter)
-app.use('/api/tmdb', tmdbRouter)
+app.use('/api/genre', genreRouter)
+app.use('/api/quejas', quejasRouter)
+
 
 app.get('/', (req: Request, res: Response) => {
-    res.send('Welcome to Series Tracker API')
+    res.send('Bienvenido al backend (api rest)')
 })
 
 export default app

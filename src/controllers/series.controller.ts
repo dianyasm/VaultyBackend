@@ -72,91 +72,48 @@ export class SeriesController {
         }
     }
 
-    static async addToUserList(req: Request, res: Response, next: NextFunction) {
-        try {
+    static async rate(req:Request, res:Response, next: NextFunction){
+        try{
             const id = Number.parseInt(req.params.id)
-            if (isNaN(id)) throw new HttpException(400, "Invalid series ID");
+            console.log('id!!!', id)
+            if (isNaN(id)) throw new HttpException(400, "Invalid offer ID");
 
-            const { status, progress, favorite } = req.body
+            const {value} = req.body
             const userId = req.user?.id
-            if (!userId) throw new HttpException(400, "User ID is required")
-
-            await SeriesService.addToUserList(userId, id, { status, progress, favorite })
-            res.status(200).json({ message: 'Series added to your list successfully' })
-        } catch (error) {
+            if(!userId) throw new HttpException(400, "User creator ID is required");
+            console.log('value!!!', value)
+            console.log('userId!!!', userId)
+            await SeriesService.rate(userId, id, value)
+            res.status(200).json({message: 'Offer rate successfully'})
+        }catch(error){
             next(error)
         }
     }
 
-    static async updateUserProgress(req: Request, res: Response, next: NextFunction) {
-        try {
+    static async getRate(req:Request, res:Response, next: NextFunction){
+        try{
             const id = Number.parseInt(req.params.id)
-            if (isNaN(id)) throw new HttpException(400, "Invalid series ID");
+            if (isNaN(id)) throw new HttpException(400, "Invalid offer ID");
 
-            const { status, progress, favorite } = req.body
+            const rate = await SeriesService.getRate(id)
+            console.log(rate)
+            res.status(200).json(rate)
+        }catch(error){
+            next(error)
+        }
+    }
+    static async getMyRate(req:Request, res:Response, next: NextFunction){
+        try{
+            const id = Number.parseInt(req.params.id)
+            if (isNaN(id)) throw new HttpException(400, "Invalid offer ID");
+            
             const userId = req.user?.id
-            if (!userId) throw new HttpException(400, "User ID is required")
+            if(!userId) throw new HttpException(400, "User creator ID is required");
 
-            await SeriesService.updateUserProgress(userId, id, { status, progress, favorite })
-            res.status(200).json({ message: 'Progress updated successfully' })
-        } catch (error) {
+            const rate = await SeriesService.getMyRate(userId, id)
+            res.status(200).json(rate)
+        }catch(error){
             next(error)
-        }
-    }
-
-    static async review(req: Request, res: Response, next: NextFunction) {
-        try {
-            const id = Number.parseInt(req.params.id)
-            if (isNaN(id)) throw new HttpException(400, "Invalid series ID");
-
-            const { rating, comment } = req.body
-            const userId = req.user?.id
-            if (!userId) throw new HttpException(400, "User ID is required")
-
-            await SeriesService.review(userId, id, { rating, comment })
-            res.status(200).json({ message: 'Review submitted successfully' })
-        } catch (error) {
-            next(error)
-        }
-    }
-
-    static async getReviews(req: Request, res: Response, next: NextFunction) {
-        try {
-            const id = Number.parseInt(req.params.id)
-            if (isNaN(id)) throw new HttpException(400, "Invalid series ID");
-
-            const reviews = await SeriesService.getReviews(id)
-            res.status(200).json(reviews)
-        } catch (error) {
-            next(error)
-        }
-    }
-
-    static async getFavorites(req: Request, res: Response, next: NextFunction) {
-        try {
-            const userId = req.user?.id;
-            if (!userId) {
-                throw new HttpException(400, 'User ID is required');
-            }
-    
-            const favorites = await SeriesService.getFavorites(userId);
-            res.status(200).json(favorites);
-        } catch (error) {
-            next(error);
-        }
-    }
-    
-    static async getWatchlist(req: Request, res: Response, next: NextFunction) {
-        try {
-            const userId = req.user?.id;
-            if (!userId) {
-                throw new HttpException(400, 'User ID is required');
-            }
-    
-            const watchlist = await SeriesService.getWatchlist(userId);
-            res.status(200).json(watchlist);
-        } catch (error) {
-            next(error);
         }
     }
 }

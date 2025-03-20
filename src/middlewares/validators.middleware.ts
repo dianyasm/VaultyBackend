@@ -12,29 +12,36 @@ export const loginValidation = [
 ]
 
 export const seriesValidation = [
-    body('title').notEmpty().withMessage('Title is required'),
-    body('seasons').optional().isInt({ min: 1 }).withMessage('Seasons must be a positive integer'),
-    body('episodes').optional().isInt({ min: 1 }).withMessage('Episodes must be a positive integer'),
-    body('releaseDate').optional().isISO8601().withMessage('Release date must be a valid date'),
-    body('endDate').optional().isISO8601().withMessage('End date must be a valid date'),
-    body('idGenre').optional().isInt().withMessage('Genre ID must be an integer')
+    body('title')
+        .isLength({ min: 2, max: 40 }).withMessage('Título debe tener entre 2 y 40 caracteres'),
+    body('description').optional().isLength({ max: 2000 }).withMessage('Descripción demasiado larga'),
+    body('seasons').optional().isInt().withMessage('Número de temporadas inválido'), // Assuming it should be an integer
+    body('episodes').optional().isInt().withMessage('Número de episodios inválido'), // Assuming it should be an integer
+    body('active').isBoolean().withMessage('El campo active debe ser un valor booleano')
 ]
 
 export const genreValidation = [
-    body('name').notEmpty().withMessage('Genre name is required')
+    body('name').notEmpty().withMessage('Name required')
 ]
 
-export const userSeriesValidation = [
-    body('status').isIn(['watching', 'completed', 'plan_to_watch', 'dropped']).withMessage('Invalid status'),
-    body('progress').isInt({ min: 0 }).withMessage('Progress must be a non-negative integer'),
-    body('favorite').isBoolean().withMessage('Favorite must be a boolean')
+export const rateValidation = [
+    body('value').isInt({ min: 0, max: 5 }).toInt().withMessage('Value is required')
 ]
 
-export const reviewValidation = [
-    body('rating').isInt({ min: 1, max: 10 }).withMessage('Rating must be between 1 and 10'),
-    body('comment').optional().isString().withMessage('Comment must be a string')
-]
-
-export const userPreferencesValidation = [
-    body('preferences').isString().withMessage('Preferences must be a string')
-]
+export const quejaValidation = [
+    body("motivo")
+    .notEmpty()
+    .withMessage("El motivo es requerido")
+    .isString()
+    .withMessage("El motivo debe ser texto")
+    .isLength({ min: 3, max: 100 })
+    .withMessage("El motivo debe tener entre 3 y 100 caracteres"),
+  
+  body("descripcion")
+    .notEmpty()
+    .withMessage("La descripción es requerida")
+    .isString()
+    .withMessage("La descripción debe ser texto")
+    .isLength({ min: 10, max: 1000 })
+    .withMessage("La descripción debe tener entre 10 y 1000 caracteres")
+];

@@ -21,14 +21,14 @@ model User {
   email     String @unique
   password  String
   role      String?  // admin user null
-  preferences String?
   active    Boolean @default(true)
   acceptNotifications Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  series    UserSeries[]
-  reviews   Review[]
+  series    Series[]
+  rates     Rate[]
+  quejas    Quejas[]
 }
 
 model Series {
@@ -36,11 +36,8 @@ model Series {
   title       String
   description String?
   active      Boolean @default(true)
-  releaseDate DateTime?
-  endDate     DateTime?
   seasons     Int @default(1)
   episodes    Int @default(1)
-  network     String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -50,8 +47,8 @@ model Series {
   idGenre     Int?
   genre       Genre?  @relation(fields: [idGenre], references: [id])
 
-  userSeries  UserSeries[]
-  reviews     Review[]
+  userCreator   User  @relation(fields: [idUserCreator], references: [id])
+  rates   Rate[]
 }
 
 model Genre {
@@ -64,33 +61,29 @@ model Genre {
   series      Series[]
 }
 
-model UserSeries {
-  idUser      Int
-  idSeries    Int
-  status      String  // watching, completed, plan_to_watch, dropped
-  progress    Int @default(0)  // episode number
-  favorite    Boolean @default(false)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model Rate{
+  idUser  Int
+  idSerie Int
+  value   Int  
 
-  user        User @relation(fields: [idUser], references: [id])
-  series      Series @relation(fields: [idSeries], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt   
 
-  @@id([idUser, idSeries])
+  user  User  @relation(fields: [idUser], references: [id])
+  series  Series  @relation(fields: [idSerie], references: [id])
+
+  @@id([idUser, idSerie])
 }
 
-model Review {
-  idUser      Int
-  idSeries    Int
-  rating      Int  // 1-10 rating
-  comment     String?
-  
+model Quejas {
+  id          Int      @id @default(autoincrement())
+  idUser      Int  
+  motivo      String   
+  descripcion String 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  user        User @relation(fields: [idUser], references: [id])
-  series      Series @relation(fields: [idSeries], references: [id])
+  user        User     @relation(fields: [idUser], references: [id])
 
-  @@id([idUser, idSeries])
+  @@index([idUser])
 }
